@@ -105,16 +105,20 @@ def delete_order():
         os.remove(f)
 
 def move_file():
+    try : 
+        files = glob.glob(f'downloaded_files/*pdf')
 
-    files = glob.glob(f'downloaded_files/*pdf')
-
-    for source_file in files:
-        file_name = os.path.basename(source_file)
-        print(file_name)
-        new_path = 'G:\\My Drive\\test_bot'
-        # os.rename(source_file, f'{new_path}\\{file_name}')
-        # shutil.move(source_file, f'{new_path}\\{file_name}')
-        shutil.copy(source_file, f'{new_path}\\{file_name}')
+        for source_file in files:
+            file_name = os.path.basename(source_file)
+            print(file_name)
+            new_path = 'G:\\My Drive\\test_bot'
+            # os.rename(source_file, f'{new_path}\\{file_name}')
+            # shutil.move(source_file, f'{new_path}\\{file_name}')
+            shutil.copy(source_file, f'{new_path}\\{file_name}')
+            
+    except Exception as e:
+        time.sleep(1)
+        print('move_file Error')
 
 if __name__ == "__main__":
 
