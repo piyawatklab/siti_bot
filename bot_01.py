@@ -11,9 +11,13 @@ import glob
 import shutil
 import sys
 
+import requests
+import io
+import csv
+
 import pandas as pd
 
-from libs.settings import USERNAME_LOGIN , PASSWORD_LOGIN , SHEET_LINK
+from libs.settings import USERNAME_LOGIN , PASSWORD_LOGIN , SHEET_LINK , SHAREPOINT_PATH
 
 PWD = os.getcwd()
 
@@ -24,18 +28,25 @@ prefs = {"profile.default_content_settings.popups": 0,
             "directory_upgrade": True}
 options.add_experimental_option("prefs",prefs)
 
-data = []
+order_list = []
 
 def run(name):
 
     delete_order()
 
-    order_list = search_order()
+    if name == 'online':
+        order_list = reader_sheet()
+    else:
+        order_list = search_order()
+
+    print(order_list)
+
+    # order_list = search_order()
     
     if len(order_list) > 0 :
     
-        # driver = Driver(uc=True)
-        driver = Driver(uc=True,headless=True)
+        driver = Driver(uc=True)
+        # driver = Driver(uc=True,headless=True)
         driver.set_window_size(1920, 1080)
 
         url = 'https://sitirb.lyreco.com/sitiweb/FH1/dispatch.do?language=TH&country=TH'
@@ -54,9 +65,13 @@ def run(name):
 
         start_index = original_url.find("/overview")
 
+        order_list_search = []
+
         for line in order_list:
             try:
-
+                order_line = {}
+                order_line['order_line_no'] = line
+                delivery_sap_id = []
                 new_url = original_url[:start_index] + "/delivery/getDeliveryBySapId/" + line
 
                 # print(new_url)
@@ -70,21 +85,26 @@ def run(name):
                         td_line = row_line.find_element(By.XPATH, ".//td[@class='input-sm']")
                         td_line.find_element(By.XPATH, ".//a").click()
                         time.sleep(3)
+
                         a_element = driver.find_elements(By.XPATH, ".//a[@class='blocking-download']")
                         if len(a_element) > 0 :
+                            delivery_sap_id.append(driver.find_element(By.XPATH, ".//dd[@id='deliverySapId']").text)
                             for download_pdf in a_element:
                                 download_pdf.click()
                                 time.sleep(3)
                         # time.sleep(3)
+                        order_line['delivery_sap_id'] = delivery_sap_id
                         driver.find_element(By.XPATH, ".//button[@class='close']").click()
                         time.sleep(3)
                 print(line,'Done')
+                order_list_search.append(order_line)
 
             except Exception as e:
                 time.sleep(1)
                 print(line,'Error')
 
         driver.quit()
+        print(order_list_search)
         move_file()
 
 def search_order():
@@ -98,6 +118,22 @@ def search_order():
 
     return data_array
 
+def reader_sheet():
+    records = []
+    url = SHEET_LINK
+    
+    url = url.replace('edit#', 'export?format=csv&')
+    r = requests.get(url)
+    r.encoding = 'utf-8'
+    csvio = io.StringIO(r.text, newline="")
+    reader = csv.DictReader(csvio)
+    for row in reader:
+        records.append(row)
+
+    list_of_values = [d['order'] for d in records]
+
+    return list_of_values
+
 def delete_order():
 
     files = glob.glob(f'downloaded_files/*pdf')
@@ -110,15 +146,15 @@ def move_file():
 
         for source_file in files:
             file_name = os.path.basename(source_file)
-            print(file_name)
-            new_path = 'G:\\My Drive\\test_bot'
+            # print(file_name)
+            new_path = SHAREPOINT_PATH
             # os.rename(source_file, f'{new_path}\\{file_name}')
             # shutil.move(source_file, f'{new_path}\\{file_name}')
             shutil.copy(source_file, f'{new_path}\\{file_name}')
             
     except Exception as e:
         time.sleep(1)
-        print('move_file Error')
+        print(e, 'move_file Error')
 
 if __name__ == "__main__":
 
@@ -129,7 +165,8 @@ if __name__ == "__main__":
             if key == "name":
                 name = value
     
-    print("Name :", name)
+    print("Run :", name)
     run(name)
-    
-    
+
+    # reader_sheet()
+    # search_order()
