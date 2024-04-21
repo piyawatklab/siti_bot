@@ -17,7 +17,7 @@ import csv
 
 import pandas as pd
 
-from libs.settings import USERNAME_LOGIN , PASSWORD_LOGIN , SHEET_LINK , SHAREPOINT_PATH
+from libs.settings import USERNAME_LOGIN , PASSWORD_LOGIN , SHEET_LINK , DESTINATION_PATH
 
 PWD = os.getcwd()
 
@@ -32,7 +32,7 @@ order_list = []
 
 def run(name):
 
-    delete_order()
+    clean_order()
 
     if name == 'online':
         order_list = reader_sheet()
@@ -114,8 +114,6 @@ def search_order():
     data_array = df.values.tolist()
     data_array = [str(item[0]) for item in data_array]
 
-    print(data_array)
-
     return data_array
 
 def reader_sheet():
@@ -134,11 +132,24 @@ def reader_sheet():
 
     return list_of_values
 
-def delete_order():
+def clean_order():
 
-    files = glob.glob(f'downloaded_files/*pdf')
-    for f in files:
-        os.remove(f)
+    # files = glob.glob(f'downloaded_files/*pdf')
+    # for f in files:
+    #     os.remove(f)
+
+    source_directory = 'downloaded_files'
+    destination_directory = 'downloaded_files/old_files'
+
+    if not os.path.exists(destination_directory):
+        os.makedirs(destination_directory)
+
+    files = os.listdir(source_directory)
+    for file_name in files:
+        if file_name.endswith('.pdf') :
+            source_path = os.path.join(source_directory, file_name)
+            destination_path = os.path.join(destination_directory, file_name)
+            shutil.move(source_path, destination_path)
 
 def move_file():
     try : 
@@ -146,11 +157,10 @@ def move_file():
 
         for source_file in files:
             file_name = os.path.basename(source_file)
-            # print(file_name)
-            new_path = SHAREPOINT_PATH
+            new_path = DESTINATION_PATH
             # os.rename(source_file, f'{new_path}\\{file_name}')
-            # shutil.move(source_file, f'{new_path}\\{file_name}')
-            shutil.copy(source_file, f'{new_path}\\{file_name}')
+            shutil.move(source_file, f'{new_path}\\{file_name}')
+            # shutil.copy(source_file, f'{new_path}\\{file_name}')
             
     except Exception as e:
         time.sleep(1)
@@ -167,6 +177,3 @@ if __name__ == "__main__":
     
     print("Run :", name)
     run(name)
-
-    # reader_sheet()
-    # search_order()
