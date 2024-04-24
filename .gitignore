@@ -1,4 +1,4 @@
 downloaded_files/*pdf
-downloaded_files/old_files/*pdf
+downloaded_files/backup_files/*pdf
 test.ipynb
 .env

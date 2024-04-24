@@ -45,8 +45,8 @@ def run(name):
     
     if len(order_list) > 0 :
     
-        # driver = Driver(uc=True)
-        driver = Driver(uc=True,headless=True)
+        driver = Driver(uc=True)
+        # driver = Driver(uc=True,headless=True)
         driver.set_window_size(1920, 1080)
 
         url = 'https://sitirb.lyreco.com/sitiweb/FH1/dispatch.do?language=TH&country=TH'
@@ -139,7 +139,7 @@ def clean_order():
     #     os.remove(f)
 
     source_directory = 'downloaded_files'
-    destination_directory = 'downloaded_files/old_files'
+    destination_directory = 'downloaded_files/backup_files'
 
     if not os.path.exists(destination_directory):
         os.makedirs(destination_directory)
