@@ -113,6 +113,7 @@ def search_order():
 
     data_array = df.values.tolist()
     data_array = [str(item[0]) for item in data_array]
+    print(data_array)
 
     return data_array
 
@@ -157,10 +158,11 @@ def move_file():
 
         for source_file in files:
             file_name = os.path.basename(source_file)
+            print(file_name)
+            new_file_name = file_name.split('_')[-1]
             new_path = DESTINATION_PATH
-            # os.rename(source_file, f'{new_path}\\{file_name}')
-            shutil.move(source_file, f'{new_path}\\{file_name}')
-            # shutil.copy(source_file, f'{new_path}\\{file_name}')
+            # shutil.move(source_file, f'{new_path}\\{file_name}')
+            shutil.move(source_file, f'{new_path}\\{new_file_name}')
             
     except Exception as e:
         time.sleep(1)
@@ -177,3 +179,5 @@ if __name__ == "__main__":
     
     print("Run :", name)
     run(name)
+    time.sleep(5)
+    # search_order()
